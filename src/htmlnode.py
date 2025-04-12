@@ -74,3 +74,31 @@ def text_node_to_html_node(text_node):
             return LeafNode("img", "", text_node.url)
         case _:
             raise ValueError("Invalid TextType")
+        
+def split_nodes_delimiter(old_nodes, delimiter, text_type):
+    new_nodes = []
+
+    for old_node in old_nodes:
+        if old_node.text_type != TextType.NORMAL:
+            new_nodes.append(old_node)
+            continue
+
+        if old_node.text.count(delimiter) % 2 != 0:
+            raise Exception("Invalid markdown: missing closing delimiter")
+        
+        if delimiter not in old_node.text:
+            new_nodes.append(old_node)
+            continue
+        
+        parts = old_node.text.split(delimiter)
+        is_inside_delimiter = False
+
+        for part in parts:
+            if part:
+                if is_inside_delimiter:
+                    new_nodes.append(TextNode(part, text_type))
+                else:
+                    new_nodes.append(TextNode(part, TextType.NORMAL))
+            
+            is_inside_delimiter = not is_inside_delimiter
+    return new_nodes
